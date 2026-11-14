@@ -3,6 +3,8 @@
 import argparse
 import os
 
+from depgraph.cargo import direct_dependencies
+
 
 class ConfigError(Exception):
     """Ошибка в параметрах запуска."""
@@ -100,11 +102,20 @@ def format_params(settings):
 
 
 def main(argv=None):
-    """Точка входа: разобрать параметры и вывести их."""
+    """Точка входа: параметры, затем прямые зависимости (этап 2)."""
     try:
         settings = validate(parse_args(argv))
     except ConfigError as err:
         print("ошибка: %s" % err)
         return 2
     print(format_params(settings))
+    try:
+        deps = direct_dependencies(settings["package"],
+                                   settings["repo"])
+    except Exception as err:  # сеть недоступна: честно сообщаем
+        print("ошибка: %s" % err)
+        return 1
+    print("dependencies:")
+    for name in deps:
+        print("  " + name)
     return 0
