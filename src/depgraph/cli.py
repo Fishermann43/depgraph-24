@@ -4,6 +4,7 @@ import argparse
 import os
 
 from depgraph.cargo import direct_dependencies
+from depgraph.graph import bfs_iterative, load_test_repo
 
 
 class ConfigError(Exception):
@@ -101,14 +102,32 @@ def format_params(settings):
     return "\n".join(lines)
 
 
+def print_test_graph(settings):
+    """Построить и вывести граф из тестового файла (этапы 3-5)."""
+    graph = load_test_repo(settings["repo"])
+    get_deps = graph.get
+    order, cycles = bfs_iterative(settings["package"], get_deps,
+                                  settings["max_depth"])
+    print("graph order:")
+    for name in order:
+        print("  " + name)
+    if cycles:
+        print("cycles:")
+        for found in cycles:
+            print("  " + " -> ".join(found))
+    return 0
+
+
 def main(argv=None):
-    """Точка входа: параметры, затем прямые зависимости (этап 2)."""
+    """Точка входа: параметры, затем зависимости (этапы 2-3)."""
     try:
         settings = validate(parse_args(argv))
     except ConfigError as err:
         print("ошибка: %s" % err)
         return 2
     print(format_params(settings))
+    if settings["test_mode"] and os.path.isfile(settings["repo"]):
+        return print_test_graph(settings)
     try:
         deps = direct_dependencies(settings["package"],
                                    settings["repo"])
