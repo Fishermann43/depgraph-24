@@ -104,6 +104,7 @@ def format_params(settings):
 
 def print_test_graph(settings):
     """Построить и вывести граф из тестового файла (этапы 3-5)."""
+    from depgraph.ascii_tree import render_tree
     graph = load_test_repo(settings["repo"])
     get_deps = graph.get
     order, cycles = bfs_iterative(settings["package"], get_deps,
@@ -115,6 +116,10 @@ def print_test_graph(settings):
         print("cycles:")
         for found in cycles:
             print("  " + " -> ".join(found))
+    if settings["ascii_tree"]:
+        print("ascii tree:")
+        print(render_tree(settings["package"], get_deps,
+                          settings["max_depth"]))
     return 0
 
 
