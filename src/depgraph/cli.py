@@ -105,6 +105,7 @@ def format_params(settings):
 def print_test_graph(settings):
     """Построить и вывести граф из тестового файла (этапы 3-5)."""
     from depgraph.ascii_tree import render_tree
+    from depgraph.image import write_svg
     graph = load_test_repo(settings["repo"])
     get_deps = graph.get
     order, cycles = bfs_iterative(settings["package"], get_deps,
@@ -120,6 +121,8 @@ def print_test_graph(settings):
         print("ascii tree:")
         print(render_tree(settings["package"], get_deps,
                           settings["max_depth"]))
+    write_svg(graph, settings["package"], settings["image"])
+    print("image: " + settings["image"])
     return 0
 
 
